@@ -8,7 +8,7 @@ import {
 
 import { getFirestore } from "firebase-admin/firestore";
 
-const serviceAccount = JSON.parse(
+const serviceKey = JSON.parse(
   process.env.FIREBASE_SERVICE_ACCOUNT_KEY as string
 );
 
