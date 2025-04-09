@@ -38,6 +38,9 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
+  if (process.env.DISABLE_AUTH_ENDPOINT === "true") {
+    return NextResponse.json({ message: "Skipped during build" }, { status: 200 });
+  }
   try {
     // Protect the route
     auth.protect();
