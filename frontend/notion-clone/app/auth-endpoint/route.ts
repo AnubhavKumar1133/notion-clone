@@ -41,21 +41,31 @@ export async function POST(req: NextRequest) {
   try {
     // Protect the route
     auth.protect();
-    
+
     const { sessionClaims } = await auth();
-    
-    // Validate request body
-    let room;
+
+    // Validate and parse request body
+    let room: string;
     try {
       const body = await req.json();
+
+      if (!body || typeof body !== "object") {
+        return NextResponse.json(
+          { message: "Invalid request body format" },
+          { status: 400 }
+        );
+      }
+
       room = body.room;
-      if (!room || typeof room !== 'string') {
+
+      if (!room || typeof room !== "string") {
         return NextResponse.json(
           { message: "Invalid room ID" },
           { status: 400 }
         );
       }
     } catch (error) {
+      console.error("Failed to parse JSON body:", error);
       return NextResponse.json(
         { message: "Invalid request body" },
         { status: 400 }
@@ -72,13 +82,14 @@ export async function POST(req: NextRequest) {
 
     const session = liveblocks.prepareSession(sessionClaims.email, {
       userInfo: {
-        name: sessionClaims.fullName || '',
+        name: sessionClaims.fullName || "",
         email: sessionClaims.email,
-        avatar: sessionClaims.image || '',
-      }
+        avatar: sessionClaims.image || "",
+      },
     });
 
-    const usersInRoom = await adminDb.collectionGroup("rooms")
+    const usersInRoom = await adminDb
+      .collectionGroup("rooms")
       .where("userId", "==", sessionClaims.email)
       .get();
 
